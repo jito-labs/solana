@@ -32,6 +32,7 @@ use {
         signature::Keypair,
         timing,
     },
+    std::str::FromStr,
     std::{
         iter::repeat_with,
         net::{IpAddr, SocketAddr, UdpSocket},
@@ -267,9 +268,16 @@ fn get_connection_stake(
     connection: &Connection,
     staked_nodes: &RwLock<StakedNodes>,
 ) -> Option<(Pubkey, u64, u64, u64, u64)> {
+    info!("sss conn 1");
     let pubkey = get_remote_pubkey(connection)?;
+    if pubkey == Pubkey::from_str("2Kc8nqjp7dnXNKFVUQsh5TEFQtmMfiH8NfR4zLvHMWBP").unwrap() {
+        info!("sss conn 2 pubkey: {pubkey:?}");
+    }
     debug!("Peer public key is {pubkey:?}");
     let staked_nodes = staked_nodes.read().unwrap();
+    if pubkey == Pubkey::from_str("2Kc8nqjp7dnXNKFVUQsh5TEFQtmMfiH8NfR4zLvHMWBP").unwrap() {
+        info!("sss conn 3 pubkey: {pubkey:?}");
+    }
     Some((
         pubkey,
         staked_nodes.get_node_stake(&pubkey)?,
@@ -512,6 +520,7 @@ async fn setup_connection(
 ) {
     const PRUNE_RANDOM_SAMPLE_SIZE: usize = 2;
     let from = connecting.remote_address();
+    info!("fff: {}", from);
     if let Ok(connecting_result) = timeout(QUIC_CONNECTION_HANDSHAKE_TIMEOUT, connecting).await {
         match connecting_result {
             Ok(new_connection) => {
@@ -547,6 +556,17 @@ async fn setup_connection(
                         }
                     },
                 );
+                if let Some(pubkey) = params.remote_pubkey {
+                    if pubkey
+                        == Pubkey::from_str("2Kc8nqjp7dnXNKFVUQsh5TEFQtmMfiH8NfR4zLvHMWBP").unwrap()
+                    {
+                        let stake = match params.peer_type {
+                            ConnectionPeerType::Staked(stake) => stake,
+                            _ => 0,
+                        };
+                        info!("sss peer: stake: {}", stake);
+                    }
+                }
 
                 match params.peer_type {
                     ConnectionPeerType::Staked(stake) => {
