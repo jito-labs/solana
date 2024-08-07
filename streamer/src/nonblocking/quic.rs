@@ -255,13 +255,20 @@ fn prune_unstaked_connection_table(
 
 pub fn get_remote_pubkey(connection: &Connection) -> Option<Pubkey> {
     // Use the client cert only if it is self signed and the chain length is 1.
-    connection
-        .peer_identity()?
-        .downcast::<Vec<rustls::Certificate>>()
-        .ok()
-        .filter(|certs| certs.len() == 1)?
-        .first()
-        .and_then(get_pubkey_from_tls_certificate)
+    info!("sss get_remote_pubkey 1");
+    let conn = connection.peer_identity()?;
+    info!("sss get_remote_pubkey 2");
+    let certs = conn.downcast::<Vec<rustls::Certificate>>().ok()?;
+    info!("sss get_remote_pubkey 3");
+    if certs.len() != 1 {
+        return None;
+    }
+    info!("sss get_remote_pubkey 4");
+    let cert = certs.first().unwrap();
+    info!("sss get_remote_pubkey 5");
+    let pubkey = get_pubkey_from_tls_certificate(cert)?;
+    info!("sss get_remote_pubkey 6");
+    Some(pubkey)
 }
 
 fn get_connection_stake(
