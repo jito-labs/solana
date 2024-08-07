@@ -254,20 +254,36 @@ fn prune_unstaked_connection_table(
 }
 
 pub fn get_remote_pubkey(connection: &Connection) -> Option<Pubkey> {
+    let should_log = connection.remote_address().ip().to_string() == "64.130.53.53";
+    if !should_log {
+        info!("fff {}", connection.remote_address().ip().to_string());
+    }
     // Use the client cert only if it is self signed and the chain length is 1.
-    info!("sss get_remote_pubkey 1");
+    if should_log {
+        info!("sss get_remote_pubkey 1");
+    }
     let conn = connection.peer_identity()?;
-    info!("sss get_remote_pubkey 2");
+    if should_log {
+        info!("sss get_remote_pubkey 2");
+    }
     let certs = conn.downcast::<Vec<rustls::Certificate>>().ok()?;
-    info!("sss get_remote_pubkey 3");
+    if should_log {
+        info!("sss get_remote_pubkey 3");
+    }
     if certs.len() != 1 {
         return None;
     }
-    info!("sss get_remote_pubkey 4");
+    if should_log {
+        info!("sss get_remote_pubkey 4");
+    }
     let cert = certs.first().unwrap();
-    info!("sss get_remote_pubkey 5");
+    if should_log {
+        info!("sss get_remote_pubkey 5");
+    }
     let pubkey = get_pubkey_from_tls_certificate(cert)?;
-    info!("sss get_remote_pubkey 6");
+    if should_log {
+        info!("sss get_remote_pubkey 6");
+    }
     Some(pubkey)
 }
 
@@ -275,7 +291,10 @@ fn get_connection_stake(
     connection: &Connection,
     staked_nodes: &RwLock<StakedNodes>,
 ) -> Option<(Pubkey, u64, u64, u64, u64)> {
-    info!("sss conn 1");
+    let should_log = connection.remote_address().ip().to_string() == "64.130.53.53";
+    if should_log {
+        info!("sss conn 1");
+    }
     let pubkey = get_remote_pubkey(connection)?;
     if pubkey == Pubkey::from_str("2Kc8nqjp7dnXNKFVUQsh5TEFQtmMfiH8NfR4zLvHMWBP").unwrap() {
         info!("sss conn 2 pubkey: {pubkey:?}");
